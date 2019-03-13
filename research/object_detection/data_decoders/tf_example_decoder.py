@@ -163,6 +163,8 @@ class TfExampleDecoder(data_decoder.DataDecoder):
     # other decoders to handle label maps similarly.
     del use_display_name
     self.keys_to_features = {
+        'image/channels':
+            tf.FixedLenFeature((), tf.int64, default_value=3),
         'image/encoded':
             tf.FixedLenFeature((), tf.string, default_value=''),
         'image/format':
@@ -208,26 +210,31 @@ class TfExampleDecoder(data_decoder.DataDecoder):
     }
     # We are checking `dct_method` instead of passing it directly in order to
     # ensure TF version 1.6 compatibility.
-    if dct_method:
-      image = slim_example_decoder.Image(
-          image_key='image/encoded',
-          format_key='image/format',
-          channels=3,
-          dct_method=dct_method)
-      additional_channel_image = slim_example_decoder.Image(
-          image_key='image/additional_channels/encoded',
-          format_key='image/format',
-          channels=1,
-          repeated=True,
-          dct_method=dct_method)
-    else:
-      image = slim_example_decoder.Image(
-          image_key='image/encoded', format_key='image/format', channels=3)
-      additional_channel_image = slim_example_decoder.Image(
-          image_key='image/additional_channels/encoded',
-          format_key='image/format',
-          channels=1,
-          repeated=True)
+    # if dct_method:
+    #   image = slim_example_decoder.Image(
+    #       image_key='image/encoded',
+    #       format_key='image/format',
+    #       channels=3,
+    #       dct_method=dct_method)
+    #   additional_channel_image = slim_example_decoder.Image(
+    #       image_key='image/additional_channels/encoded',
+    #       format_key='image/format',
+    #       channels=1,
+    #       repeated=True,
+    #       dct_method=dct_method)
+    # else:
+    #   image = slim_example_decoder.Image(
+    #       image_key='image/encoded', format_key='image/format', channels=3)
+    #   additional_channel_image = slim_example_decoder.Image(
+    #       image_key='image/additional_channels/encoded',
+    #       format_key='image/format',
+    #       channels=1,
+    #       repeated=True)
+    image = slim_example_decoder.ItemHandlerCallback(
+        keys=['image/encoded', 'image/height', 'image/width', 'image/channels'],
+        func=self._read_clumpy_image
+      )
+
     self.items_to_handlers = {
         fields.InputDataFields.image:
             image,
@@ -310,6 +317,15 @@ class TfExampleDecoder(data_decoder.DataDecoder):
         fields.InputDataFields.groundtruth_classes] = label_handler
     self.items_to_handlers[
         fields.InputDataFields.groundtruth_image_classes] = image_label_handler
+
+  def _read_multi_channel_image(self, keys_to_tensors):
+    image_encoded = keys_to_tensors['image/encoded']
+    height = keys_to_tensors['image/height']
+    width = keys_to_tensors['image/width']
+    channels = keys_to_tensors['image/channels']
+    targetShape = tf.cast(tf.stack([height, width, channels]), tf.int32)
+    image = tf.reshape(tf.decode_raw(image_encoded, tf.float32), targetShape)
+    return image
 
   def decode(self, tf_example_string_tensor):
     """Decodes serialized tensorflow example and returns a tensor dictionary.

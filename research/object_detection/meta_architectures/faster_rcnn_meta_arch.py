@@ -117,6 +117,7 @@ class FasterRCNNFeatureExtractor(object):
   def __init__(self,
                is_training,
                first_stage_features_stride,
+               num_input_channels=3,
                batch_norm_trainable=False,
                reuse_weights=None,
                weight_decay=0.0):
@@ -126,6 +127,7 @@ class FasterRCNNFeatureExtractor(object):
       is_training: A boolean indicating whether the training version of the
         computation graph should be constructed.
       first_stage_features_stride: Output stride of extracted RPN feature map.
+      num_input_channels: The number of channels in the input image e.g. RGB has 3.
       batch_norm_trainable: Whether to update batch norm parameters during
         training or not. When training with a relative large batch size
         (e.g. 8), it could be desirable to enable batch norm update.
@@ -134,6 +136,7 @@ class FasterRCNNFeatureExtractor(object):
     """
     self._is_training = is_training
     self._first_stage_features_stride = first_stage_features_stride
+    self._num_input_channels = num_input_channels
     self._train_batch_norm = (batch_norm_trainable and is_training)
     self._reuse_weights = reuse_weights
     self._weight_decay = weight_decay

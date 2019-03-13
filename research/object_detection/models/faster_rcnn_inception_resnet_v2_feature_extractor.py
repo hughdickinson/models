@@ -37,6 +37,7 @@ class FasterRCNNInceptionResnetV2FeatureExtractor(
   def __init__(self,
                is_training,
                first_stage_features_stride,
+               num_input_channels=3,
                batch_norm_trainable=False,
                reuse_weights=None,
                weight_decay=0.0):
@@ -45,6 +46,7 @@ class FasterRCNNInceptionResnetV2FeatureExtractor(
     Args:
       is_training: See base class.
       first_stage_features_stride: See base class.
+      num_input_channelsL See base class.
       batch_norm_trainable: See base class.
       reuse_weights: See base class.
       weight_decay: See base class.
@@ -55,8 +57,8 @@ class FasterRCNNInceptionResnetV2FeatureExtractor(
     if first_stage_features_stride != 8 and first_stage_features_stride != 16:
       raise ValueError('`first_stage_features_stride` must be 8 or 16.')
     super(FasterRCNNInceptionResnetV2FeatureExtractor, self).__init__(
-        is_training, first_stage_features_stride, batch_norm_trainable,
-        reuse_weights, weight_decay)
+        is_training, first_stage_features_stride, num_input_channels,
+        batch_norm_trainable, reuse_weights, weight_decay)
 
   def preprocess(self, resized_inputs):
     """Faster R-CNN with Inception Resnet v2 preprocessing.
@@ -210,4 +212,3 @@ class FasterRCNNInceptionResnetV2FeatureExtractor(
             second_stage_feature_extractor_scope + '/', '')
         variables_to_restore[var_name] = variable
     return variables_to_restore
-
