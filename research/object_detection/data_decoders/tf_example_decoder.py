@@ -232,7 +232,7 @@ class TfExampleDecoder(data_decoder.DataDecoder):
     #       repeated=True)
     image = slim_example_decoder.ItemHandlerCallback(
         keys=['image/encoded', 'image/height', 'image/width', 'image/channels'],
-        func=self._read_clumpy_image
+        func=self._read_multi_channel_image
       )
 
     self.items_to_handlers = {
