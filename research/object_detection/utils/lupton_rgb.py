@@ -111,6 +111,7 @@ def map_Lupton04(imagesTensor, beta=3., alpha=0.06, Q=3.5,
     """
     # r,g,b = N.asarray(r).copy(),N.asarray(g).copy(),N.asarray(b).copy()
     # make sure all the entries are >= 0
+    imagesTensor[:, :, :, 0:3] /= 255.0
     imagesTensor[:, :, :, 0:3] *= tf.convert_to_tensor(bandScalings)
     imagesTensor[:, :, :, 0:3] = tf.where(images[:, :, :, 0:3] > 0.0, images[:, :, :, 0:3], 0.0)
     # r = N.where(r>0., r, 0.)
@@ -148,4 +149,4 @@ def map_Lupton04(imagesTensor, beta=3., alpha=0.06, Q=3.5,
     #     r += pedestal
     #     g += pedestal
     #     b += pedestal
-    return imagesTensor
+    return imagesTensor * 255.0
