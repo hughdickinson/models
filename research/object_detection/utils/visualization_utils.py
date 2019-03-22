@@ -36,7 +36,7 @@ import tensorflow as tf
 from object_detection.core import standard_fields as fields
 from object_detection.utils import shape_utils
 
-from .lupton_rgb import RGBImage
+from .lupton_rgb import map_Lupton04
 
 _TITLE_LEFT_MARGIN = 10
 _TITLE_TOP_MARGIN = 10
@@ -326,6 +326,7 @@ def galaxyzoo_rgb(images):
       images: A 4D uint8 image tensor of shape [N, H, W, 3]. The three
       channels are assumed to be SDSS GRI.
     """
+    return map_Lupton04(images)
 
 
 def draw_bounding_boxes_on_image_tensors(images,
