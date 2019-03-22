@@ -371,7 +371,7 @@ def draw_bounding_boxes_on_image_tensors(images,
     4D image tensor of type uint8, with boxes drawn on top.
   """
   # Additional channels are being ignored.
-  if images.shape[3] > 3:
+  if images.shape[3] >= 3:
     # rescale image channels before overlaying detection boxes
     images = galaxyzoo_rgb(images[:, :, :, 0:3])
   elif images.shape[3] == 1:
