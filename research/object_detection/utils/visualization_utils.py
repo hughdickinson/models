@@ -326,7 +326,7 @@ def galaxyzoo_rgb(images):
       images: A 4D uint8 image tensor of shape [N, H, W, 3]. The three
       channels are assumed to be SDSS GRI.
     """
-    return map_Lupton04(images)
+    return map_Lupton04(images, Q=50, alpha=0.5)
 
 
 def draw_bounding_boxes_on_image_tensors(images,
@@ -373,7 +373,7 @@ def draw_bounding_boxes_on_image_tensors(images,
   # Additional channels are being ignored.
   if images.shape[3] > 3:
     # rescale image channels before overlaying detection boxes
-    images = galaxyzoo_rgb(images)[:, :, :, 0:3]
+    images = galaxyzoo_rgb(images[:, :, :, 0:3])
   elif images.shape[3] == 1:
     images = tf.image.grayscale_to_rgb(images)
   visualization_keyword_args = {

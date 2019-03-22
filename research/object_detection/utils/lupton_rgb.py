@@ -85,7 +85,6 @@ HISTORY
 __version__ = '0.1 (June 22, 2006)'
 __credits__ = '''The code is written by Taro Sato (nomo17k@gmail.com)'''
 
-from astropy.io import fits as P
 import tensorflow as tf
 
 
@@ -109,44 +108,24 @@ def map_Lupton04(imagesTensor, beta=3., alpha=0.06, Q=3.5,
       Hence the mapped values are NOT normalized to [0,1].  Saturation and
       max(R,G,B) > 1 cases have not been taken care of.
     """
-    # r,g,b = N.asarray(r).copy(),N.asarray(g).copy(),N.asarray(b).copy()
-    # make sure all the entries are >= 0
-    imagesTensor[:, :, :, 0:3] /= 255.0
-    imagesTensor[:, :, :, 0:3] *= tf.convert_to_tensor(bandScalings)
-    imagesTensor[:, :, :, 0:3] = tf.where(images[:, :, :, 0:3] > 0.0, images[:, :, :, 0:3], 0.0)
-    # r = N.where(r>0., r, 0.)
-    # g = N.where(g>0., g, 0.)
-    # b = N.where(b>0., b, 0.)
-    # compute nonlinear mapping
-    radius = tf.reduce_sum(images[:, :, :, 0:3], axis=3)/beta
-    nlfac = tf.where(radius > 0.0, tf.math.asinh(alpha*Q*radius)/(Q*radius), 0.0)
-    # radius_ok = radius > 0.0
-    # nlfac = radius * 0.0
-    # nlfac[radius_ok] = N.arcsinh(radius[radius_ok])/radius[radius_ok]
-    imagesTensor[:, :, :, 0:3] *= nlfac
-    # r = r*nlfac
-    # g = g*nlfac
-    # b = b*nlfac
-    # if args.get('desaturate'):
-    #     # optionally desaturate pixels that are dominated by a single
-    #     # colour to avoid colourful speckled sky
-    #     a = (r+g+b)/3.0
-    #     N.putmask(a, a == 0.0, 1.0)
-    #     rab = r / a / beta
-    #     gab = g / a / beta
-    #     bab = b / a / beta
-    #     mask = N.array((rab, gab, bab))
-    #     w = N.max(mask, 0)
-    #     N.putmask(w, w > 1.0, 1.0)
-    #     w = 1 - w
-    #     w = N.sin(w*N.pi/2.0)
-    #     r = r*w + a*(1-w)
-    #     g = g*w + a*(1-w)
-    #     b = b*w + a*(1-w)
-    # # optionally add a grey pedestal
-    # if args.has_key('pedestal'):
-    #     pedestal = args['pedestal']
-    #     r += pedestal
-    #     g += pedestal
-    #     b += pedestal
+    imagesTensor /= 255.0
+    imagesTensor = imagesTensor * tf.convert_to_tensor(bandScalings)
+    imagesTensor = tf.where(
+        imagesTensor > 0.0, imagesTensor, tf.zeros_like(imagesTensor)
+    )
+
+    print(imagesTensor.shape)
+
+    radius = tf.reduce_sum(imagesTensor, axis=3) * beta
+    nlfac = tf.where(
+        radius > 0.0,
+        tf.math.asinh(alpha * Q * radius) / (Q * radius),
+        tf.zeros_like(radius),
+    )
+
+    imagesTensor = tf.transpose(
+        tf.transpose(imagesTensor, [3, 0, 1, 2]) * nlfac, [1, 2, 3, 0]
+    )
+
+    imagesTensor /= tf.reduce_max(imagesTensor)
     return imagesTensor * 255.0
