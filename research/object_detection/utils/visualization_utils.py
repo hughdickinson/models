@@ -36,6 +36,8 @@ import tensorflow as tf
 from object_detection.core import standard_fields as fields
 from object_detection.utils import shape_utils
 
+from .lupton_rgb import RGBImage
+
 _TITLE_LEFT_MARGIN = 10
 _TITLE_TOP_MARGIN = 10
 STANDARD_COLORS = [
@@ -318,6 +320,14 @@ def _resize_original_image(image, image_shape):
   return tf.cast(tf.squeeze(image, 0), tf.uint8)
 
 
+def galaxyzoo_rgb(images):
+    """Rescale image bands using the same approach as Galaxy Zoo
+    Args:
+      images: A 4D uint8 image tensor of shape [N, H, W, 3]. The three
+      channels are assumed to be SDSS GRI.
+    """
+
+
 def draw_bounding_boxes_on_image_tensors(images,
                                          boxes,
                                          classes,
@@ -361,7 +371,8 @@ def draw_bounding_boxes_on_image_tensors(images,
   """
   # Additional channels are being ignored.
   if images.shape[3] > 3:
-    images = images[:, :, :, 0:3]
+    # rescale image channels before overlaying detection boxes
+    images = galaxyzoo_rgb(images)[:, :, :, 0:3]
   elif images.shape[3] == 1:
     images = tf.image.grayscale_to_rgb(images)
   visualization_keyword_args = {
