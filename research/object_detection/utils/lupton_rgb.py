@@ -108,6 +108,7 @@ def map_Lupton04(imagesTensor, beta=3., alpha=0.06, Q=3.5,
       Hence the mapped values are NOT normalized to [0,1].  Saturation and
       max(R,G,B) > 1 cases have not been taken care of.
     """
+    imagesTensor = tf.cast(imagesTensor, tf.float32)
     imagesTensor = tf.div(imagesTensor, tf.constant(255.0, dtype=tf.float32))
     imagesTensor = imagesTensor * tf.convert_to_tensor(bandScalings)
     imagesTensor = tf.where(
@@ -128,4 +129,4 @@ def map_Lupton04(imagesTensor, beta=3., alpha=0.06, Q=3.5,
     )
 
     imagesTensor /= tf.reduce_max(imagesTensor)
-    return tf.multiply(imagesTensor, tf.constant(255.0, dtype=tf.float32))
+    return tf.cast(tf.multiply(imagesTensor, tf.constant(255.0, dtype=tf.float32)), tf.uint8)
