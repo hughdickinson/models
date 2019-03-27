@@ -90,7 +90,7 @@ import tensorflow as tf
 
 def map_Lupton04(imagesTensor, beta=3., alpha=0.06, Q=3.5,
                  bandScalings=[1.000, 1.176, 1.818],
-                 oversaturateFactor=3, args={}):
+                 oversaturateFactor=2, args={}):
     """Lupton et al. (2004) mapping
 
     DESCRIPTION
