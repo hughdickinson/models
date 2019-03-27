@@ -381,7 +381,7 @@ def draw_bounding_boxes_on_image_tensors(images,
       'max_boxes_to_draw': max_boxes_to_draw,
       'min_score_thresh': min_score_thresh,
       'agnostic_mode': False,
-      'line_thickness': 4
+      'line_thickness': 2
   }
   if true_image_shape is None:
     true_shapes = tf.constant(-1, shape=[images.shape.as_list()[0], 3])
