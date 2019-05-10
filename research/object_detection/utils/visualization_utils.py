@@ -36,6 +36,8 @@ import tensorflow as tf
 from object_detection.core import standard_fields as fields
 from object_detection.utils import shape_utils
 
+from .lupton_rgb import map_Lupton04
+
 _TITLE_LEFT_MARGIN = 10
 _TITLE_TOP_MARGIN = 10
 STANDARD_COLORS = [
@@ -318,6 +320,15 @@ def _resize_original_image(image, image_shape):
   return tf.cast(tf.squeeze(image, 0), tf.uint8)
 
 
+def galaxyzoo_rgb(images):
+    """Rescale image bands using the same approach as Galaxy Zoo
+    Args:
+      images: A 4D uint8 image tensor of shape [N, H, W, 3]. The three
+      channels are assumed to be SDSS GRI.
+    """
+    return map_Lupton04(images, Q=50, alpha=0.5)
+
+
 def draw_bounding_boxes_on_image_tensors(images,
                                          boxes,
                                          classes,
@@ -360,8 +371,9 @@ def draw_bounding_boxes_on_image_tensors(images,
     4D image tensor of type uint8, with boxes drawn on top.
   """
   # Additional channels are being ignored.
-  if images.shape[3] > 3:
-    images = images[:, :, :, 0:3]
+  if images.shape[3] >= 3:
+    # rescale image channels before overlaying detection boxes
+    images = galaxyzoo_rgb(images[:, :, :, 0:3])
   elif images.shape[3] == 1:
     images = tf.image.grayscale_to_rgb(images)
   visualization_keyword_args = {
@@ -369,7 +381,7 @@ def draw_bounding_boxes_on_image_tensors(images,
       'max_boxes_to_draw': max_boxes_to_draw,
       'min_score_thresh': min_score_thresh,
       'agnostic_mode': False,
-      'line_thickness': 4
+      'line_thickness': 2
   }
   if true_image_shape is None:
     true_shapes = tf.constant(-1, shape=[images.shape.as_list()[0], 3])
