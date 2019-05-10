@@ -164,7 +164,7 @@ class TfExampleDecoder(data_decoder.DataDecoder):
     del use_display_name
     self.keys_to_features = {
         'image/channels':
-            tf.FixedLenFeature((), tf.int64, default_value=3),
+            tf.FixedLenFeature((), tf.int64, default_value=5),
         'image/encoded':
             tf.FixedLenFeature((), tf.string, default_value=''),
         'image/format':
@@ -323,6 +323,10 @@ class TfExampleDecoder(data_decoder.DataDecoder):
     height = keys_to_tensors['image/height']
     width = keys_to_tensors['image/width']
     channels = keys_to_tensors['image/channels']
+    if tf.get_default_session() is not None:
+        print('Extracting {} channels...'.format(channels.eval(session=tf.get_default_session())))
+    else:
+        print('No session yet!')
     targetShape = tf.cast(tf.stack([height, width, channels]), tf.int32)
     image = tf.reshape(tf.decode_raw(image_encoded, tf.float32), targetShape)
     return image
@@ -372,6 +376,7 @@ class TfExampleDecoder(data_decoder.DataDecoder):
       fields.InputDataFields.groundtruth_image_classes - 1D uint64 of shape
         [None] containing classes for the boxes.
     """
+    print('Decode called!')
     serialized_example = tf.reshape(tf_example_string_tensor, shape=[])
     decoder = slim_example_decoder.TFExampleDecoder(self.keys_to_features,
                                                     self.items_to_handlers)
@@ -380,7 +385,7 @@ class TfExampleDecoder(data_decoder.DataDecoder):
     tensor_dict = dict(zip(keys, tensors))
     is_crowd = fields.InputDataFields.groundtruth_is_crowd
     tensor_dict[is_crowd] = tf.cast(tensor_dict[is_crowd], dtype=tf.bool)
-    tensor_dict[fields.InputDataFields.image].set_shape([None, None, 3])
+    tensor_dict[fields.InputDataFields.image].set_shape([None, None, 5])
     tensor_dict[fields.InputDataFields.original_image_spatial_shape] = tf.shape(
         tensor_dict[fields.InputDataFields.image])[:2]
 
